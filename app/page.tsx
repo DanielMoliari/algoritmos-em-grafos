@@ -4,12 +4,7 @@ import Sidebar from '../components/Sidebar';
 import GraphControls from '../components/GraphControls';
 import GraphDisplay from '../components/GraphDisplay';
 import GraphList from '../components/GraphList';
-
-interface Graph {
-  id: string;
-  type: 'directional' | 'undirectional';
-  edges: { from: string; to: string; weight?: number }[];
-}
+import { IEdge, IGraph } from '@/interfaces';
 
 const HomePage: React.FC = () => {
   const [graphType, setGraphType] = useState<'directional' | 'undirectional'>(
@@ -18,12 +13,11 @@ const HomePage: React.FC = () => {
   const [from, setFrom] = useState<string>('');
   const [to, setTo] = useState<string>('');
   const [weight, setWeight] = useState<number | undefined>(undefined);
-  const [edges, setEdges] = useState<
-    { from: string; to: string; weight?: number }[]
-  >([]);
-  const [graphs, setGraphs] = useState<Graph[]>([]);
+  const [edges, setEdges] = useState<IEdge[]>([]);
+  const [graphs, setGraphs] = useState<IGraph[]>([]);
   const [viewMode, setViewMode] = useState<boolean>(false);
-  const [viewedGraph, setViewedGraph] = useState<Graph | null>(null);
+  const [viewedGraph, setViewedGraph] = useState<IGraph | null>(null);
+  const [editingGraph, setEditingGraph] = useState<IGraph | null>(null);
 
   const cyRef = useRef<cytoscape.Core | null>(null);
 
@@ -39,14 +33,20 @@ const HomePage: React.FC = () => {
   const saveGraph = () => {
     if (edges.length === 0 || viewMode) return;
 
-    const newGraph: Graph = {
-      id: Date.now().toString(),
+    const newGraph: IGraph = {
+      id: editingGraph ? editingGraph.id : Date.now().toString(),
       type: graphType,
       edges: edges,
     };
 
-    setGraphs([...graphs, newGraph]);
+    if (editingGraph) {
+      setGraphs(graphs.map((g) => (g.id === editingGraph.id ? newGraph : g)));
+    } else {
+      setGraphs([...graphs, newGraph]);
+    }
+
     setEdges([]);
+    setEditingGraph(null);
   };
 
   const printGraph = () => {
@@ -62,22 +62,34 @@ const HomePage: React.FC = () => {
     }
   };
 
-  const handleSelectGraph = (graph: Graph) => {
+  const handleSelectGraph = (graph: IGraph) => {
     if (!viewMode) {
       setGraphType(graph.type);
       setEdges(graph.edges);
     }
   };
 
-  const handleViewGraph = (graph: Graph) => {
+  const handleViewGraph = (graph: IGraph) => {
     setGraphType(graph.type);
     setViewedGraph(graph);
     setEdges(graph.edges);
     setViewMode(true);
   };
 
+  const handleEditGraph = (graph: IGraph) => {
+    setEditingGraph(graph);
+    setGraphType(graph.type);
+    setEdges(graph.edges);
+    setFrom('');
+    setTo('');
+    setWeight(undefined);
+    setViewMode(false);
+    document.querySelector('button')?.click();
+  };
+
   const handleDeleteGraph = (id: string) => {
     setGraphs(graphs.filter((graph) => graph.id !== id));
+    handleExitViewMode();
   };
 
   const handleExitViewMode = () => {
@@ -87,7 +99,6 @@ const HomePage: React.FC = () => {
     setWeight(undefined);
     setViewedGraph(null);
 
-    // Cria um novo grafo vazio para futuras adições de arestas
     setEdges([]);
   };
 
@@ -128,6 +139,7 @@ const HomePage: React.FC = () => {
           onSelectGraph={handleSelectGraph}
           onDeleteGraph={handleDeleteGraph}
           onViewGraph={handleViewGraph}
+          onEditGraph={handleEditGraph}
         />
       </div>
     </div>

@@ -17,6 +17,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { IEdge } from '@/interfaces';
 
 interface SidebarProps {
   graphType: 'directional' | 'undirectional';
@@ -27,7 +28,7 @@ interface SidebarProps {
   setTo: (value: string) => void;
   weight: number | undefined;
   setWeight: (value: number | undefined) => void;
-  edges: { from: string; to: string; weight?: number }[];
+  edges: IEdge[];
   addEdge: () => void;
   saveGraph: () => void;
   printGraph: () => void;

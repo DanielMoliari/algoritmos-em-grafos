@@ -1,8 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import cytoscape from 'cytoscape';
+import { IEdge } from '@/interfaces';
 
 interface GraphDisplayProps {
-  edges: { from: string; to: string; weight?: number }[];
+  edges: IEdge[];
   graphType: 'directional' | 'undirectional';
   onGraphInit: (cy: cytoscape.Core) => void;
 }
@@ -90,7 +91,6 @@ const GraphDisplay: React.FC<GraphDisplayProps> = ({
       //   cy.on('pan', panHandler);
     }
 
-    // Cleanup
     return () => {
       if (cyRef.current) {
         cyRef.current.destroy();
@@ -121,7 +121,7 @@ const GraphDisplay: React.FC<GraphDisplayProps> = ({
 
       cyRef.current.add({ nodes, edges: edgesElements });
       cyRef.current.layout({ name: 'cose', animate: true }).run();
-      cyRef.current.fit(); // Centraliza o grafo após adicionar os elementos
+      cyRef.current.fit();
     }
   }, [edges, graphType]);
 

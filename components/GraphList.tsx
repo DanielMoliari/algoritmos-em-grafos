@@ -1,17 +1,13 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-
-interface Graph {
-  id: string;
-  type: 'directional' | 'undirectional';
-  edges: { from: string; to: string; weight?: number }[];
-}
+import { IGraph } from '@/interfaces';
 
 interface GraphListProps {
-  graphs: Graph[];
-  onSelectGraph: (graph: Graph) => void;
+  graphs: IGraph[];
+  onSelectGraph: (graph: IGraph) => void;
   onDeleteGraph: (id: string) => void;
-  onViewGraph: (graph: Graph) => void;
+  onViewGraph: (graph: IGraph) => void;
+  onEditGraph: (graph: IGraph) => void;
 }
 
 const GraphList: React.FC<GraphListProps> = ({
@@ -19,6 +15,7 @@ const GraphList: React.FC<GraphListProps> = ({
   onSelectGraph,
   onDeleteGraph,
   onViewGraph,
+  onEditGraph,
 }) => {
   return (
     <div className="p-4 bg-gray-100 shadow-lg rounded-lg">
@@ -53,7 +50,7 @@ const GraphList: React.FC<GraphListProps> = ({
                 Ver
               </Button>
               <Button
-                onClick={() => onSelectGraph(graph)}
+                onClick={() => onEditGraph(graph)}
                 className="mr-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-md transition-transform transform hover:scale-105"
               >
                 Editar
