@@ -88,7 +88,11 @@ const StronglyConnectedComponents: React.FC<
       </button>
       <div className="flex flex-col lg:flex-row gap-6">
         <div className="lg:w-[30%] flex flex-col space-y-4">
-          <h3 className="font-semibold">Componentes Fortemente Conectados:</h3>
+          {components.length > 0 && (
+            <h3 className="font-semibold">
+              Componentes Fortemente Conectados:
+            </h3>
+          )}
           <ul className="list-disc list-inside space-y-2 max-h-96 overflow-y-auto">
             {components.map((component, index) => (
               <li
@@ -99,9 +103,11 @@ const StronglyConnectedComponents: React.FC<
               </li>
             ))}
           </ul>
-          <h3 className="font-semibold mt-4">
-            Tempos de Descoberta e Finalização:
-          </h3>
+          {components.length > 0 && (
+            <h3 className="font-semibold mt-4">
+              Tempos de Descoberta e Finalização:
+            </h3>
+          )}
           <ul className="list-disc list-inside space-y-2 max-h-96 overflow-y-auto">
             {Object.entries(nodeTimes).map(([node, times]) => (
               <li

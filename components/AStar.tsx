@@ -119,9 +119,13 @@ const AStar: React.FC<AStarProps> = ({ graph, heuristic }) => {
           >
             Rodar A*
           </button>
-          <h3 className="font-semibold">Caminho Mínimo:</h3>
+          {path.length > 0 && (
+            <h3 className="font-semibold">Caminho Mínimo:</h3>
+          )}
           <p>{path.join(' -> ')}</p>
-          <h3 className="font-semibold mt-4">Lista Aberta:</h3>
+          {openList.length > 0 && (
+            <h3 className="font-semibold mt-4">Lista Aberta:</h3>
+          )}
           <ul className="list-disc list-inside space-y-2">
             {openList.map((node, index) => (
               <li
@@ -132,7 +136,9 @@ const AStar: React.FC<AStarProps> = ({ graph, heuristic }) => {
               </li>
             ))}
           </ul>
-          <h3 className="font-semibold mt-4">Lista Fechada:</h3>
+          {closedList.length > 0 && (
+            <h3 className="font-semibold mt-4">Lista Fechada:</h3>
+          )}
           <ul className="list-disc list-inside space-y-2">
             {closedList.map((node, index) => (
               <li

@@ -106,9 +106,13 @@ const Dijkstra: React.FC<DijkstraProps> = ({ graph }) => {
           >
             Rodar Dijkstra
           </button>
-          <h3 className="font-semibold">Caminho Mínimo:</h3>
+          {path.length > 0 && (
+            <h3 className="font-semibold">Caminho Mínimo:</h3>
+          )}
           <p>{path.join(' -> ')}</p>
-          <h3 className="font-semibold mt-4">Tabela de Controle:</h3>
+          {controlTable.length > 0 && (
+            <h3 className="font-semibold mt-4">Tabela de Controle:</h3>
+          )}
           <ul className="list-disc list-inside space-y-2">
             {controlTable.map((row, index) => (
               <li
