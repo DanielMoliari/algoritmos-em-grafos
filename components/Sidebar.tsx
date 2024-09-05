@@ -17,7 +17,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { IEdge } from '@/interfaces';
+import { IEdge, IGraph } from '@/interfaces';
 
 interface SidebarProps {
   graphType: 'directional' | 'undirectional';
@@ -34,6 +34,9 @@ interface SidebarProps {
   printGraph: () => void;
   viewMode: boolean;
   handleExitViewMode: () => void;
+  graphs: IGraph[];
+  setGraphs: (graphs: IGraph[]) => void;
+  onAlgorithmSelect: (algorithm: string) => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -51,6 +54,9 @@ const Sidebar: React.FC<SidebarProps> = ({
   printGraph,
   viewMode,
   handleExitViewMode,
+  graphs,
+  setGraphs,
+  onAlgorithmSelect,
 }) => {
   const [newGraphType, setNewGraphType] = React.useState<
     'directional' | 'undirectional'
@@ -140,28 +146,60 @@ const Sidebar: React.FC<SidebarProps> = ({
               >
                 Adicionar Aresta
               </Button>
+              <Button
+                onClick={saveGraph}
+                className="w-full bg-green-600 hover:bg-green-700 text-white"
+                disabled={viewMode}
+              >
+                Salvar Grafo
+              </Button>
+              <Button
+                onClick={printGraph}
+                className="w-full bg-gray-600 hover:bg-gray-700 text-white"
+                disabled={viewMode}
+              >
+                Imprimir Grafo
+              </Button>
             </>
           )}
-          <Button
-            onClick={saveGraph}
-            className="w-full bg-green-600 hover:bg-green-700 text-white"
-            disabled={viewMode}
-          >
-            Salvar Grafo
-          </Button>
-          <Button
-            onClick={printGraph}
-            className="w-full bg-gray-600 hover:bg-gray-700 text-white"
-            disabled={viewMode}
-          >
-            Imprimir Grafo
-          </Button>
+          {viewMode && graphType === 'directional' && (
+            <div className="space-y-4 mt-4">
+              <Button
+                onClick={() => onAlgorithmSelect('topologicalSort')}
+                className="bg-blue-500 w-full text-white"
+              >
+                Ordenação Topológica
+              </Button>
+              <Button
+                onClick={() => onAlgorithmSelect('stronglyConnectedComponents')}
+                className="bg-green-500 w-full text-white"
+              >
+                Componentes Fortemente Conectados
+              </Button>
+            </div>
+          )}
+          {viewMode && graphType === 'undirectional' && (
+            <div className="space-y-4 mt-4">
+              <Button
+                onClick={() => onAlgorithmSelect('dijkistra')}
+                className="bg-blue-500 w-full text-white"
+              >
+                Dijkistra
+              </Button>
+              <Button
+                onClick={() => onAlgorithmSelect('astar')}
+                className="bg-green-500 w-full text-white"
+              >
+                A*
+              </Button>
+            </div>
+          )}
           {viewMode && (
             <Button
               onClick={handleExitViewMode}
               className="w-full bg-red-600 hover:bg-red-700 text-white"
             >
-              Sair do Modo de Visualização
+              Sair do Modo de Seleção
             </Button>
           )}
         </div>

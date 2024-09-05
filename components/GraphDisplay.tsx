@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import cytoscape from 'cytoscape';
 import { IEdge } from '@/interfaces';
 
@@ -6,15 +6,18 @@ interface GraphDisplayProps {
   edges: IEdge[];
   graphType: 'directional' | 'undirectional';
   onGraphInit: (cy: cytoscape.Core) => void;
+  nodeTimes?: { [key: string]: [number, number] }; // Adicionando opcionalmente os tempos
 }
 
 const GraphDisplay: React.FC<GraphDisplayProps> = ({
   edges,
   graphType,
   onGraphInit,
+  nodeTimes,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<cytoscape.Core | null>(null);
+  const [initialized, setInitialized] = useState(false); // Adicionando estado para verificar inicialização
 
   useEffect(() => {
     if (containerRef.current && !cyRef.current) {
@@ -26,7 +29,13 @@ const GraphDisplay: React.FC<GraphDisplayProps> = ({
             selector: 'node',
             style: {
               'background-color': '#4f46e5',
-              label: 'data(label)',
+              width: '40px', // Ajuste o tamanho do nó aqui
+              height: '40px', // Ajuste o tamanho do nó aqui
+              label: (ele: cytoscape.NodeSingular) => {
+                const id = ele.data('id');
+                const times = nodeTimes ? nodeTimes[id] : null;
+                return times ? `${id}\n(${times[0]}/${times[1]})` : id;
+              },
               color: '#ffffff',
               'text-valign': 'center',
               'text-halign': 'center',
@@ -89,6 +98,8 @@ const GraphDisplay: React.FC<GraphDisplayProps> = ({
       //   };
 
       //   cy.on('pan', panHandler);
+
+      setInitialized(true); // Define o estado como inicializado
     }
 
     return () => {
@@ -97,33 +108,37 @@ const GraphDisplay: React.FC<GraphDisplayProps> = ({
         cyRef.current = null;
       }
     };
-  }, [graphType, onGraphInit]);
+  }, [graphType, onGraphInit, nodeTimes]);
 
   useEffect(() => {
-    if (cyRef.current) {
-      cyRef.current.elements().remove();
-      const nodesSet = new Set<string>();
-      edges.forEach((edge) => {
-        nodesSet.add(edge.from);
-        nodesSet.add(edge.to);
-      });
-      const nodes = Array.from(nodesSet).map((node) => ({
-        data: { id: node, label: node },
-      }));
-      const edgesElements = edges.map((edge, index) => ({
-        data: {
-          id: `e${index}`,
-          source: edge.from,
-          target: edge.to,
-          label: edge.weight ? `${edge.weight}` : '',
-        },
-      }));
+    if (cyRef.current && initialized) {
+      try {
+        cyRef.current.elements().remove();
+        const nodesSet = new Set<string>();
+        edges.forEach((edge) => {
+          nodesSet.add(edge.from);
+          nodesSet.add(edge.to);
+        });
+        const nodes = Array.from(nodesSet).map((node) => ({
+          data: { id: node, label: node },
+        }));
+        const edgesElements = edges.map((edge, index) => ({
+          data: {
+            id: `e${index}`,
+            source: edge.from,
+            target: edge.to,
+            label: edge.weight ? `${edge.weight}` : '',
+          },
+        }));
 
-      cyRef.current.add({ nodes, edges: edgesElements });
-      cyRef.current.layout({ name: 'cose', animate: true }).run();
-      cyRef.current.fit();
+        cyRef.current.add({ nodes, edges: edgesElements });
+        cyRef.current.layout({ name: 'cose', animate: true }).run();
+        cyRef.current.fit();
+      } catch (error) {
+        console.error('Erro ao manipular o grafo:', error);
+      }
     }
-  }, [edges, graphType]);
+  }, [edges, graphType, nodeTimes, initialized]);
 
   return (
     <div

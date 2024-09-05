@@ -5,6 +5,9 @@ import GraphControls from '../components/GraphControls';
 import GraphDisplay from '../components/GraphDisplay';
 import GraphList from '../components/GraphList';
 import { IEdge, IGraph } from '@/interfaces';
+import TopologicalSort from '@/components/TopologicalSort';
+import StronglyConnectedComponents from '@/components/StronglyConnectedComponents';
+import AlgorithmModal from '@/components/AlgorithmModal';
 
 const HomePage: React.FC = () => {
   const [graphType, setGraphType] = useState<'directional' | 'undirectional'>(
@@ -18,6 +21,10 @@ const HomePage: React.FC = () => {
   const [viewMode, setViewMode] = useState<boolean>(false);
   const [viewedGraph, setViewedGraph] = useState<IGraph | null>(null);
   const [editingGraph, setEditingGraph] = useState<IGraph | null>(null);
+  const [selectedAlgorithm, setSelectedAlgorithm] = useState<string | null>(
+    null,
+  );
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const cyRef = useRef<cytoscape.Core | null>(null);
 
@@ -102,6 +109,11 @@ const HomePage: React.FC = () => {
     setEdges([]);
   };
 
+  const handleSelectAlgorithm = (algorithm: string) => {
+    setSelectedAlgorithm(algorithm);
+    setIsModalOpen(true);
+  };
+
   return (
     <div className="flex h-screen bg-gray-100">
       <Sidebar
@@ -119,6 +131,9 @@ const HomePage: React.FC = () => {
         printGraph={printGraph}
         viewMode={viewMode}
         handleExitViewMode={handleExitViewMode}
+        graphs={graphs}
+        setGraphs={setGraphs}
+        onAlgorithmSelect={handleSelectAlgorithm}
       />
       <div className="flex-1 flex flex-col p-4 space-y-4 overflow-auto">
         <GraphControls
@@ -134,6 +149,14 @@ const HomePage: React.FC = () => {
             }}
           />
         </div>
+        {/* {selectedAlgorithm === 'topologicalSort' && (
+          <TopologicalSort graph={{ id: 'temp-id', edges, type: graphType }} />
+        )}
+        {selectedAlgorithm === 'stronglyConnectedComponents' && (
+          <StronglyConnectedComponents
+            graph={{ id: 'temp-id', edges, type: graphType }}
+          />
+        )} */}
         <GraphList
           graphs={graphs}
           onSelectGraph={handleSelectGraph}
@@ -142,6 +165,12 @@ const HomePage: React.FC = () => {
           onEditGraph={handleEditGraph}
         />
       </div>
+      <AlgorithmModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        algorithm={selectedAlgorithm}
+        graph={{ id: 'temp-id', edges, type: graphType }}
+      />
     </div>
   );
 };

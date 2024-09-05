@@ -47,7 +47,7 @@ const GraphList: React.FC<GraphListProps> = ({
                 onClick={() => onViewGraph(graph)}
                 className="mr-2 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow-md transition-transform transform hover:scale-105"
               >
-                Ver
+                Selecionar
               </Button>
               <Button
                 onClick={() => onEditGraph(graph)}
