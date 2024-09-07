@@ -14,8 +14,8 @@ const TopologicalSort: React.FC<TopologicalSortProps> = ({ graph }) => {
   const [availableNodes, setAvailableNodes] = useState<string[]>([]);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const cyRef = useRef<cytoscape.Core | null>(null);
-
-  let time = useRef(0); // Controla o tempo globalmente
+  const time = useRef(0); // Controla o tempo globalmente
+  const visitedRef = useRef<{ [key: string]: boolean }>({}); // Estado persistente de nós visitados
 
   // Inicializa a lista de nós 'from'
   useEffect(() => {
@@ -27,10 +27,6 @@ const TopologicalSort: React.FC<TopologicalSortProps> = ({ graph }) => {
   const initializeAvailableNodes = () => {
     console.log('Initializing available nodes...');
     const fromNodes = new Set(graph.edges.map((edge) => edge.from));
-
-    console.log('From nodes:', Array.from(fromNodes));
-
-    // Define os nós disponíveis como apenas os 'from'
     setAvailableNodes(Array.from(fromNodes));
   };
 
@@ -43,48 +39,41 @@ const TopologicalSort: React.FC<TopologicalSortProps> = ({ graph }) => {
 
     console.log('Starting topological sort with node:', selectedNode);
 
-    const visited: { [key: string]: boolean } = {};
     const times: { [key: string]: [number, number] } = {};
     const result: string[] = [];
 
     const dfs = (node: string) => {
-      console.log(`Visiting node: ${node}`);
+      const visited = visitedRef.current;
+      console.log(`Visited state for node ${node}:`, visited[node]);
+
       if (visited[node]) return; // Se já foi visitado, saia da função
       visited[node] = true;
       times[node] = [++time.current, 0];
 
       const neighbors = graph.edges
         .filter((edge) => edge.from === node)
-        .map((edge) => edge.to);
-
-      console.log(`Neighbors of node ${node}:`, neighbors);
+        .map((edge) => edge.to)
+        .filter((neighbor) => !visited[neighbor]);
 
       neighbors.forEach((neighbor) => {
-        if (!visited[neighbor]) {
-          dfs(neighbor);
-        }
+        dfs(neighbor);
       });
 
       times[node][1] = ++time.current;
       result.push(node);
-
       console.log(`Finished visiting node: ${node}`);
     };
 
-    // Reinicializa o set de nós visitados para cada nova execução
+    // Inicia a DFS no nó selecionado
     dfs(selectedNode);
 
     console.log('DFS complete. Result:', result);
-    console.log('Visited nodes:', visited);
+    console.log('Visited nodes:', visitedRef.current);
     console.log('Times:', times);
 
     // Atualiza os nós disponíveis que ainda não foram visitados
     const remainingNodesWithoutDependencies = availableNodes.filter(
-      (node) => !visited[node],
-    );
-    console.log(
-      'Remaining nodes without dependencies:',
-      remainingNodesWithoutDependencies,
+      (node) => !visitedRef.current[node],
     );
 
     setAvailableNodes(remainingNodesWithoutDependencies);
@@ -99,7 +88,6 @@ const TopologicalSort: React.FC<TopologicalSortProps> = ({ graph }) => {
 
   // Lida com a seleção de um nó
   const handleNodeSelection = (node: string) => {
-    console.log('Node selected:', node);
     setSelectedNode(node);
   };
 
@@ -107,7 +95,7 @@ const TopologicalSort: React.FC<TopologicalSortProps> = ({ graph }) => {
     <div className="p-4">
       <div className="flex flex-col lg:flex-row gap-6">
         <div className="lg:w-[30%] flex flex-col space-y-4">
-          <h3 className="font-semibold mb-4">Selecione um nó de partida:</h3>
+          <h3 className="font-semibold mb-0">Selecione um nó de partida:</h3>
           {availableNodes.length > 0 ? (
             <ul className="flex flex-row gap-3 flex-wrap mb-4">
               {availableNodes.map((node) => (
@@ -129,13 +117,15 @@ const TopologicalSort: React.FC<TopologicalSortProps> = ({ graph }) => {
             </p>
           )}
 
-          <button
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-4"
-            onClick={topologicalSort}
-            disabled={!selectedNode}
-          >
-            Ordenar
-          </button>
+          {availableNodes.length > 0 && (
+            <button
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-4"
+              onClick={topologicalSort}
+              disabled={!selectedNode}
+            >
+              Ordenar
+            </button>
+          )}
 
           {sortedNodes.length > 0 && (
             <>
@@ -172,7 +162,6 @@ const TopologicalSort: React.FC<TopologicalSortProps> = ({ graph }) => {
             graphType="directional"
             nodeTimes={nodeTimes}
             onGraphInit={(cy) => {
-              console.log('Graph initialized');
               cyRef.current = cy;
             }}
           />
